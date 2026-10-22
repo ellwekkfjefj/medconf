@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>医学学术大会信息工作台</title>
+<style>
+  :root{
+    --primary:#1E40AF;
+    --primary-mid:#2563EB;
+    --primary-light:#EFF6FF;
+    --primary-gradient:linear-gradient(135deg,#1E40AF 0%,#2563EB 55%,#3B82F6 100%);
+    --red:#EF4444; --red-bg:#FEF2F2;
+    --orange:#F59E0B; --orange-bg:#FFF7ED;
+    --green:#10B981; --green-bg:#ECFDF5;
+    --gray:#475569; --gray-bg:#F1F5F9;
+    --border:#E2E8F0;
+    --text:#0F172A;
+    --text-light:#64748B;
+    --mute:#94A3B8;
+    --surface:#FFFFFF;
+    --page:#F1F5F9;
+    --radius:14px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","HarmonyOS Sans","PingFang SC","Microsoft YaHei",Roboto,sans-serif;
+    background:var(--page);color:var(--text);font-size:14px;line-height:1.6;
+    font-feature-settings:"tnum";
+    padding-bottom:calc(28px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px;}
+
+  /* ---------- Header ---------- */
+  header{
+    background:var(--primary-gradient);color:#fff;
+    padding:32px 0 60px;position:relative;overflow:hidden;
+  }
+  header::before{
+    content:"";position:absolute;top:-50%;right:-10%;width:600px;height:600px;
+    background:radial-gradient(circle,rgba(255,255,255,.08) 0%,transparent 70%);pointer-events:none;
+  }
+  .header-inner{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:end;position:relative;}
+  .brand{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+  .brand-logo{
+    width:44px;height:44px;background:rgba(255,255,255,.15);
+    border:1px solid rgba(255,255,255,.28);border-radius:11px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .brand-text{font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;opacity:.85;line-height:1.35;white-space:nowrap;}
+  h1{font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1.2;color:#fff;}
+  h1 .accent{font-weight:500;opacity:.6;font-size:22px;margin-left:8px;}
+  .header-sub{margin-top:10px;font-size:14px;opacity:.85;max-width:560px;line-height:1.6;}
+
+  .header-meta{
+    display:grid;grid-template-columns:auto auto auto auto auto auto;gap:0;
+    padding:14px 22px;background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.15);border-radius:14px;
+  }
+  .meta-cell{padding:0 18px;text-align:center;}
+  .meta-cell .n{font-size:30px;font-weight:800;line-height:1;color:#fff;}
+  .meta-cell .l{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:.75;margin-top:6px;color:#fff;}
+  .meta-sep{width:1px;background:rgba(255,255,255,.18);}
+
+  /* ---------- Stats ---------- */
+  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:-36px;position:relative;z-index:2;}
+  .stat-card{
+    background:var(--surface);border-radius:var(--radius);
+    box-shadow:0 1px 3px rgba(15,23,42,.08),0 4px 14px rgba(15,23,42,.04);
+    padding:20px 22px;position:relative;overflow:hidden;
+  }
+  .stat-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--primary-mid);}
+  .stat-card.green::before{background:var(--green);}
+  .stat-card.orange::before{background:var(--orange);}
+  .stat-num{font-size:38px;font-weight:800;line-height:1;letter-spacing:-.5px;color:var(--text);}
+  .stat-card.green .stat-num{color:var(--green);}
+  .stat-card.orange .stat-num{color:var(--orange);}
+  .stat-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);margin-top:10px;display:block;}
+
+  /* ---------- Sections ---------- */
+  section{margin-top:36px;}
+  .sec-title{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;margin-bottom:18px;letter-spacing:-.3px;}
+  .sec-title .sub{font-size:13px;color:var(--text-light);font-weight:400;margin-left:6px;}
+  .empty-box{background:var(--surface);border-radius:var(--radius);padding:36px;
+    text-align:center;color:var(--text-light);font-size:14px;border:1px dashed var(--border);}
+
+  /* ---------- Tabs ---------- */
+  .tabs{display:flex;gap:4px;background:var(--surface);border-radius:12px;padding:6px;
+    box-shadow:0 1px 3px rgba(15,23,42,.06);margin-top:32px;overflow-x:auto;border:1px solid var(--border);}
+  .tab{flex:1;min-width:120px;border:none;background:transparent;cursor:pointer;border-radius:8px;
+    padding:12px 12px;font-size:14px;font-weight:600;color:var(--text-light);font-family:inherit;min-height:48px;
+    transition:background .2s ease,color .2s ease,box-shadow .2s ease;}
+  .tab.active{background:var(--primary);color:#fff;box-shadow:inset 0 2px 4px rgba(0,0,0,.18),0 1px 2px rgba(30,64,175,.3);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;animation:panelFade .25s ease;}
+  @keyframes panelFade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ---------- Toolbar ---------- */
+  .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:20px 0 16px;}
+  .toolbar .search{flex:1;min-width:200px;position:relative;}
+  .toolbar input[type=text]{width:100%;padding:12px 14px 12px 42px;border:1.5px solid var(--border);
+    border-radius:10px;font-size:15px;font-family:inherit;background:var(--surface);min-height:48px;color:var(--text);
+    transition:border-color .2s ease,box-shadow .2s ease;}
+  .toolbar input[type=text]::placeholder{color:var(--mute);}
+  .toolbar input[type=text]:focus{outline:none;border-color:var(--primary-mid);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+  .search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--mute);}
+  .toolbar select{padding:12px 38px 12px 14px;border:1.5px solid var(--border);border-radius:10px;
+    font-size:14px;font-family:inherit;background:var(--surface);min-height:48px;color:var(--text);cursor:pointer;
+    -webkit-appearance:none;appearance:none;
+    background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 14px center;
+    transition:border-color .2s ease,box-shadow .2s ease;}
+  .toolbar select:focus{outline:none;border-color:var(--primary-mid);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  .chip{border:1.5px solid var(--border);background:var(--surface);border-radius:24px;padding:8px 18px;font-size:13px;
+    cursor:pointer;color:var(--text-light);font-family:inherit;min-height:40px;font-weight:500;
+    transition:border-color .2s ease,background .2s ease,color .2s ease;}
+  .chip.active{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600;}
+
+  /* ---------- Conference Cards ---------- */
+  .conf-list{display:flex;flex-direction:column;gap:14px;}
+  .conf-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:0;overflow:hidden;
+    animation:cardFadeUp .4s ease both;
+  }
+  @keyframes cardFadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+  .cc-hero{
+    padding:20px 28px 16px 30px;
+    background:linear-gradient(180deg,var(--primary-light) 0%,transparent 100%);
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;position:relative;
+    border-left:6px solid var(--primary-mid);
+  }
+  .cc-hero.green{border-left-color:var(--green);}
+  .cc-hero.orange{border-left-color:var(--orange);}
+  .cc-hero.gray{border-left-color:var(--mute);}
+  .cc-hero.blue{border-left-color:var(--primary-mid);}
+
+  .cc-abbr{font-size:24px;font-weight:800;letter-spacing:-.3px;line-height:1.2;color:var(--text);}
+  .cc-name{font-size:13px;color:var(--text-light);line-height:1.5;margin-top:8px;}
+  .cc-badges{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start;}
+
+  .badge{font-size:11.5px;font-weight:700;border-radius:6px;padding:4px 10px;letter-spacing:.5px;text-transform:uppercase;}
+  .badge.green{background:var(--green-bg);color:var(--green);}
+  .badge.orange{background:var(--orange-bg);color:var(--orange);}
+  .badge.red{background:var(--red-bg);color:var(--red);}
+  .badge.gray{background:var(--gray-bg);color:var(--gray);}
+  .badge.blue{background:var(--primary-light);color:var(--primary-mid);}
+
+  .cc-body{padding:20px 24px 22px;}
+  .cc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+
+  .cc-item{display:flex;flex-direction:column;gap:4px;}
+  .cc-item .k{color:var(--text-light);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;}
+  .cc-item .v{font-size:15px;font-weight:600;color:var(--text);word-break:break-all;line-height:1.45;}
+  .cc-item .v a{color:var(--primary-mid);text-decoration:none;font-weight:600;}
+  .v-meta{font-size:11px;color:var(--mute);font-weight:600;margin-top:3px;letter-spacing:.5px;text-transform:uppercase;}
+  .v-meta.red{color:var(--red);}
+  .v-meta.orange{color:var(--orange);}
+
+  .cc-notes{
+    font-size:13.5px;color:var(--gray);line-height:1.7;
+    margin:0 24px 18px;padding:12px 16px;
+    background:var(--gray-bg);border-left:3px solid var(--primary-mid);
+    border-radius:0 6px 6px 0;
+  }
+  .cc-notes-label{
+    display:block;font-size:11px;font-weight:700;color:var(--mute);
+    margin-bottom:4px;letter-spacing:1px;
+  }
+
+  /* ---------- Timeline ---------- */
+  .tl-scroll{overflow-x:auto;background:var(--surface);border-radius:var(--radius);
+    padding:22px 14px 14px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(15,23,42,.06);}
+  .tl-scroll svg.tl-chart{min-width:1020px;width:100%;display:block;}
+  .tl-legend{display:flex;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--text-light);padding:14px 8px 6px;font-weight:500;}
+  .tl-legend span{display:inline-flex;align-items:center;gap:7px;}
+  .lg-bar{width:22px;height:8px;border-radius:4px;background:linear-gradient(90deg,#2563EB,#3B82F6);display:inline-block;}
+  .lg-dl{width:10px;height:10px;background:var(--orange);transform:rotate(45deg);display:inline-block;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--orange);}
+  .lg-lba{width:10px;height:10px;background:var(--green);transform:rotate(45deg);display:inline-block;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--green);}
+  .lg-past{width:10px;height:10px;background:var(--mute);transform:rotate(45deg);display:inline-block;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--mute);}
+  .lg-now{width:3px;height:14px;background:var(--red);display:inline-block;border-radius:1px;}
+  /* ---------- Timeline grouping ---------- */
+  .tl-group{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;}
+  .tl-group:last-child{margin-bottom:0;}
+  .tl-group-head{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none;background:#FAFBFC;border-bottom:1px solid var(--border);}
+  .tl-group-head:hover{background:#F1F5F9;}
+  .tl-group-color{width:6px;height:24px;border-radius:3px;flex-shrink:0;}
+  .tl-group-name{font-size:15px;font-weight:700;color:var(--text);letter-spacing:.2px;}
+  .tl-group-count{font-size:12px;color:var(--text-light);font-weight:500;background:#E2E8F0;border-radius:10px;padding:2px 9px;margin-left:4px;}
+  .tl-group-arrow{margin-left:auto;color:var(--text-light);transition:transform .2s ease;}
+  .tl-group.collapsed .tl-group-arrow{transform:rotate(-90deg);}
+  .tl-group.collapsed .tl-group-body{display:none;}
+  .tl-group-body{padding:14px 14px 8px;}
+  .tl-group-body .tl-scroll{margin:0;padding:14px 8px 6px;}
+
+  /* ---------- Responsive ---------- */
+  /* Tablet: 641 – 1024 px — keep 3-column layout, just tighten gaps and trim scale */
+  @media (max-width:1024px) and (min-width:641px){
+    .wrap{max-width:100%;padding:0 18px;}
+    header{padding:28px 0 52px;}
+    .header-inner{grid-template-columns:1fr auto;gap:24px;align-items:end;}
+    h1{font-size:26px;}
+    h1 .accent{font-size:18px;}
+    .header-meta{padding:12px 18px;}
+    .meta-cell .n{font-size:32px;}
+    .stats-row{gap:12px;}
+    .stat-card{padding:18px 20px;}
+    .stat-num{font-size:34px;}
+    .cc-hero{padding:18px 22px 14px;gap:14px;}
+    .cc-abbr{font-size:20px;}
+    .cc-body{padding:18px 22px 20px;}
+    .cc-grid{gap:16px;}
+    .tabs{margin-top:28px;}
+  }
+
+  /* Mobile: ≤ 640 px — stack header, compact cards */
+  @media (max-width:640px){
+    .wrap{padding:0 16px;}
+    body{font-size:13.5px;}
+    header{padding:24px 0 44px;}
+    .header-inner{grid-template-columns:1fr;gap:18px;align-items:stretch;}
+    .brand{gap:10px;margin-bottom:10px;}
+    .brand-logo{width:38px;height:38px;border-radius:10px;}
+    .brand-logo svg{width:19px;height:19px;}
+    .brand-text{font-size:10px;letter-spacing:1px;line-height:1.4;}
+    h1{font-size:24px;}
+    h1 .accent{font-size:16px;}
+    .header-meta{grid-template-columns:1fr 1fr 1fr;gap:6px;padding:12px 14px;border-radius:12px;}
+    .meta-cell{padding:0 4px;}
+    .meta-cell .n{font-size:28px;}
+    .meta-cell .l{font-size:10px;letter-spacing:1.2px;margin-top:4px;}
+    .meta-sep{display:none;}
+
+    .stats-row{margin-top:-28px;gap:10px;}
+    .stat-card{padding:14px 16px;border-radius:12px;}
+    .stat-card::before{height:3px;}
+    .stat-num{font-size:30px;}
+    .stat-label{font-size:10px;letter-spacing:1.2px;margin-top:8px;}
+
+    section{margin-top:28px;}
+    .sec-title{font-size:18px;gap:8px;margin-bottom:14px;}
+    .sec-title .sub{font-size:12px;}
+    .empty-box{padding:28px 18px;font-size:13px;}
+
+    .tabs{margin-top:24px;padding:5px;border-radius:11px;position:sticky;top:0;z-index:50;}
+    .tab{min-width:0;padding:10px 8px;font-size:13px;min-height:44px;}
+    .tab svg{width:13px;height:13px;}
+
+    .toolbar{margin:16px 0 12px;gap:10px;}
+    .toolbar input[type=text]{padding:11px 12px 11px 38px;font-size:14px;min-height:44px;}
+    .toolbar select{padding:11px 34px 11px 12px;font-size:13.5px;min-height:44px;background-position:right 12px center;}
+    .search svg{left:12px;width:15px;height:15px;}
+    .chips{gap:6px;margin-bottom:16px;}
+    .chip{padding:7px 14px;font-size:12.5px;min-height:36px;}
+
+    .conf-list{gap:12px;}
+    .conf-card{border-radius:12px;}
+    .cc-hero{padding:16px 16px 12px;gap:12px;}
+    .cc-abbr{font-size:19px;}
+    .cc-name{font-size:12.5px;}
+    .badge{font-size:11px;padding:3px 9px;letter-spacing:.4px;}
+    .cc-body{padding:16px 16px 18px;}
+    .cc-grid{grid-template-columns:1fr 1fr;gap:14px;}
+    .cc-item .k{font-size:10.5px;letter-spacing:1px;}
+    .cc-item .v{font-size:14px;}
+    .cc-notes{margin:0 16px 14px;padding:10px 12px;font-size:12.5px;}
+
+    .tl-scroll{padding:18px 12px 12px;border-radius:12px;}
+    .tl-group-head{padding:12px 14px;gap:10px;}
+    .tl-group-name{font-size:14px;}
+    .tl-group-body{padding:10px 6px 6px;}
+    .tl-legend{gap:14px;font-size:12px;padding:12px 4px 4px;}
+  }
+
+  /* Small mobile: ≤ 420 px — collapse stats, single-column cc-grid */
+  @media (max-width:420px){
+    .wrap{padding:0 14px;}
+    header{padding:20px 0 36px;}
+    .brand{margin-bottom:8px;}
+    .brand-logo{width:34px;height:34px;}
+    .brand-logo svg{width:17px;height:17px;}
+    .brand-text{font-size:9.5px;letter-spacing:.8px;white-space:normal;}
+    h1{font-size:22px;}
+    h1 .accent{font-size:14px;margin-left:6px;}
+    .header-meta{padding:10px 12px;gap:4px;}
+    .meta-cell .n{font-size:22px;}
+    .meta-cell .l{font-size:9.5px;letter-spacing:1px;}
+
+    .stats-row{grid-template-columns:1fr;gap:8px;margin-top:-22px;}
+    .stat-card{padding:12px 14px;}
+    .stat-num{font-size:26px;}
+    .stat-label{font-size:10px;}
+
+    .cc-hero{padding:14px 14px 10px;}
+    .cc-abbr{font-size:18px;}
+    .cc-body{padding:14px 14px 16px;}
+    .cc-grid{grid-template-columns:1fr;gap:12px;}
+    .cc-item .v{font-size:13.5px;}
+    .cc-notes{margin:0 14px 12px;padding:10px 12px;font-size:12px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="header-inner">
+      <div>
+        <div class="brand">
+          <div class="brand-logo">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <path d="M3 10h18"/>
+              <path d="M8 2v4M16 2v4"/>
+              <circle cx="12" cy="15" r="1.6" fill="#fff" stroke="none"/>
+            </svg>
+          </div>
+          <span class="brand-text">Workspace Developed by Daiichi-Sankyo Medical Affairs Publication Team</span>
+        </div>
+        <h1>医学学术大会信息工作台</h1>
+      </div>
+      <div class="header-meta">
+        <div class="meta-cell"><div class="n" id="metaConf">37</div><div class="l">会议</div></div>
+        <div class="meta-sep"></div>
+        <div class="meta-cell"><div class="n" id="metaCat">8</div><div class="l">分类</div></div>
+        <div class="meta-sep"></div>
+        <div class="meta-cell"><div class="n" id="metaCity">29</div><div class="l">城市</div></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="stats-row" id="statsRow"></div>
+
+  <!-- tabs -->
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-tab="panelConf">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:5px;"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>大会信息库
+    </button>
+    <button class="tab" data-tab="panelTl">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:5px;"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>年度时间轴
+    </button>
+  </div>
+
+  <!-- 大会信息库 -->
+  <div class="tab-panel active" id="panelConf">
+    <div class="toolbar">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="confSearch" placeholder="搜索会议名称 / 城市 / 瘤种…">
+      </div>
+      <select id="statusFilter" title="按状态筛选">
+        <option value="">全部状态</option>
+        <option value="open">投稿开放中</option>
+        <option value="notstarted">未开始</option>
+        <option value="closed">已截止</option>
+        <option value="upcoming">即将开始</option>
+        <option value="ended">已结束</option>
+      </select>
+    </div>
+    <div class="chips" id="confChips">
+      <button class="chip active" data-filter="all">全部</button>
+      <button class="chip" data-filter="综合肿瘤">综合肿瘤</button>
+      <button class="chip" data-filter="肺癌">肺癌</button>
+      <button class="chip" data-filter="乳腺癌">乳腺癌</button>
+      <button class="chip" data-filter="妇科肿瘤">妇科肿瘤</button>
+      <button class="chip" data-filter="血液肿瘤">血液肿瘤</button>
+      <button class="chip" data-filter="消化道肿瘤">消化道肿瘤</button>
+      <button class="chip" data-filter="病理/诊断">病理/诊断</button>
+      <button class="chip" data-filter="糖尿病">糖尿病</button>
+      <button class="chip" data-filter="神经">神经</button>
+      <button class="chip" data-filter="镇痛">镇痛</button>
+      <button class="chip" data-filter="心血管">心血管</button>
+    </div>
+    <div class="conf-list" id="confList"></div>
+  </div>
+
+  <!-- 年度时间轴 -->
+  <div class="tab-panel" id="panelTl">
+    <section style="margin-top:20px;">
+      <div class="sec-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+        大会年度时间轴
+        <span class="sub">横条 = 会议举办期 · 橙色菱形 = 投稿截止 · 绿色菱形 = LBA 截止 · 红色虚线 = 今天</span>
+      </div>
+      <div class="tl-scroll" id="timelineBox"></div>
+      <div class="tl-legend">
+        <span><i class="lg-bar"></i>会议举办期</span>
+        <span><i class="lg-dl"></i>常规投稿截止</span>
+        <span><i class="lg-lba"></i>LBA 截止</span>
+        <span><i class="lg-past"></i>已截止</span>
+        <span><i class="lg-now"></i>今天</span>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+ * 医学学术大会信息工作台 · 单文件 HTML · localStorage（v13）· 零外部依赖
+ * 架构：数据层 → 计算层 → 渲染层（统一入口 refreshAll，渲染函数之间禁止互调）
+ * ========================================================= */
+
+var STORE_KEY = 'wb_oncoconf_data_v13';
+
+function seedConferences(){
+  return [
+    {id:'c1', isSample:true, abbr:'AACR 2026', name:'美国癌症研究协会年会（第117届）AACR Annual Meeting 2026',
+     tags:['肺癌','乳腺癌','妇科肿瘤','血液肿瘤','消化道肿瘤'], group:'综合肿瘤', deadline:'2025-11-18', lbaDeadline:'', regDeadline:'2026-03-27',
+     startDate:'2026-04-17', endDate:'2026-04-22', location:'美国·圣地亚哥', venue:'San Diego Convention Center',
+     format:'线上+线下', url:'https://www.aacr.org/meeting/aacr-annual-meeting-2026',
+     notes:'投稿截止 2025-11-18（已过）|接收通知 2025-12-30|提前注册截止 2026-03-27'},
+    {id:'c2', isSample:true, abbr:'AOS 2026', name:'亚洲肿瘤学会国际大会（第6届，联合第64届JSCO年会）',
+     tags:['肺癌','乳腺癌','妇科肿瘤','血液肿瘤','消化道肿瘤'], group:'综合肿瘤', deadline:'2026-04-22', lbaDeadline:'', regDeadline:'',
+     startDate:'2026-10-22', endDate:'2026-10-24', location:'日本·神户', venue:'Kobe Convention Center',
+     format:'线上+线下', url:'https://congress.jsco.or.jp/aos2026',
+     notes:'主题"One Team to Conquer Cancer"|摘要截止 2026-04-22 中午 12:00（JST）'},
+    {id:'c3', isSample:true, abbr:'ASCO 2026', name:'美国临床肿瘤学会年会 ASCO Annual Meeting 2026',
+     tags:['肺癌','乳腺癌','妇科肿瘤','血液肿瘤','消化道肿瘤'], group:'综合肿瘤', deadline:'2026-01-27', lbaDeadline:'', regDeadline:'',
+     startDate:'2026-05-29', endDate:'2026-06-02', location:'美国·芝加哥', venue:'McCormick Place',
+     format:'线上+线下', url:'https://www.asco.org/annual-meeting',
+     notes:'投稿截止 2026-01-27|接收通知 2026-03-27'},
+    {id:'c4', isSample:true, abbr:'ASCO GI 2026', name:'美国临床肿瘤学会胃肠肿瘤研讨会 ASCO GI Cancers Symposium 2026',
+     tags:['消化道肿瘤'], group:'消化道肿瘤', deadline:'2025-09-09', lbaDeadline:'2025-10-09', regDeadline:'2025-12-03',
+     startDate:'2026-01-08', endDate:'2026-01-10', location:'美国·旧金山', venue:'Moscone West',
+     format:'线上+线下', url:'https://www.asco.org/gi',
+     notes:'投稿截止 2025-09-09|LBA 提交截止 2025-10-09|早鸟注册截止 2025-12-03（已过）'},
+    {id:'c5', isSample:true, abbr:'ASGO 2026', name:'亚洲妇科肿瘤学会年会 ASGO 2026 Annual Meeting',
+     tags:['妇科肿瘤'], group:'妇科肿瘤', deadline:'2026-08-15', lbaDeadline:'2026-08-15', regDeadline:'2026-08-31',
+     startDate:'2026-12-04', endDate:'2026-12-06', location:'中国·上海', venue:'上海国际会议中心（浦东滨江大道2727号）',
+     format:'线上+线下', url:'https://apollo10-asgo2026.org',
+     notes:'常规摘要及 LBA 均于 8/15 截止|早鸟注册 8/31 截止|同步举办上海妇科肿瘤学会年会与第10届APOLLO专场'},
+    {id:'c6', isSample:true, abbr:'CSCO 2026', name:'第29届中国临床肿瘤学会（CSCO）学术年会',
+     tags:['肺癌','乳腺癌','妇科肿瘤','血液肿瘤','消化道肿瘤'], group:'综合肿瘤', deadline:'2026-06-28', lbaDeadline:'', regDeadline:'',
+     startDate:'2026-09-17', endDate:'2026-09-19', location:'中国·济南', venue:'山东大厦',
+     format:'线上+线下', url:'https://reg2026.csco.org.cn/cn',
+     notes:'主题"守正规范 数智创新"|投稿截止 2026-06-28'},
+    {id:'c7', isSample:true, abbr:'CSGO 2026', name:'中华医学会第十九次妇科肿瘤学术会议',
+     tags:['妇科肿瘤'], group:'妇科肿瘤', deadline:'2026-07-18', lbaDeadline:'', regDeadline:'2026-08-31',
+     startDate:'2026-09-17', endDate:'2026-09-19', location:'中国·郑州', venue:'郑州（具体会场见官网）',
+     format:'线上+线下', url:'https://www.csgo.org.cn',
+     notes:'征文截稿 2026-07-18，特设 LBA 栏目|8/31 前注册有优惠'},
+    {id:'c8', isSample:true, abbr:'ELCC 2026', name:'欧洲肺癌大会 European Lung Cancer Congress 2026',
+     tags:['肺癌'], group:'肺癌', deadline:'2026-01-13', lbaDeadline:'', regDeadline:'',
+     startDate:'2026-03-25', endDate:'2026-03-28', location:'丹麦·哥本哈根', venue:'Bella Center',
+     format:'线上+线下', url:'https://www.esmo.org/meeting-calendar/european-lung-cancer-congress-2026',
+     notes:'投稿截止 2026-01-13'},
+    {id:'c9', isSample:true, abbr:'ESGO 2027', name:'第28届欧洲妇科肿瘤大会 ESGO 2027 Congress',
+     tags:['妇科肿瘤'], group:'妇科肿瘤', deadline:'2026-10-30', lbaDeadline:'2027-01-15', regDeadline:'2026-12-17',
+     startDate:'2027-02-25', endDate:'2027-02-27', location:'英国·伦敦', venue:'ExCeL London',
+     format:'线上+线下', url:'https://congress.esgo.org',
+     notes:'摘要截止 2026-10-30|早鸟注册截止 2026-12-17|LBA 截止 2027-01-15'},
+    {id:'c10', isSample:true, abbr:'ESMO 2026', name:'欧洲肿瘤内科学会年会 ESMO Congress 2026',
+     tags:['肺癌','乳腺癌','妇科肿瘤','血液肿瘤','消化道肿瘤'], group:'综合肿瘤', deadline:'2026-05-12', lbaDeadline:'', regDeadline:'',
+     startDate:'2026-10-23', endDate:'2026-10-27', location:'西班牙·马德里', venue:'IFEMA Madrid',
+     format:'线上+线下', url:'https://www.esmo.org/meeting-calendar/esmo-congress-2026',
+     notes:'投稿截止 2026-05-12|接收通知 2026-07-10'},
+    {id:'c11', isSample:true, abbr:'ESMO Asia 2026', name:'ESMO 亚洲年会 ESMO Asia Congress 2026',
+     tags:['肺癌','乳腺癌','妇科肿瘤','血液肿瘤','消化道肿瘤'], group:'综合肿瘤', deadline:'2026-07-21', lbaDeadline:'', regDeadline:'2026-09-02',
+     startDate:'2026-12-04', endDate:'2026-12-06', location:'新加坡', venue:'新加坡（具体会场见官网）',
+     format:'线上+线下', url:'https://www.esmo.org',
+     notes:'投稿截止 2026-07-21|注册优惠截止 2026-09-02|聚焦亚洲高发瘤种'},
+    {id:'c12', isSample:true, abbr:'ESMO GI 2026', name:'ESMO 胃肠道肿瘤大会 ESMO Gastrointestinal Cancers Congress 2026',
+     tags:['消化道肿瘤'], group:'消化道肿瘤', deadline:'2026-04-07', lbaDeadline:'2026-06-04', regDeadline:'2026-06-03',
+     startDate:'2026-07-01', endDate:'2026-07-04', location:'德国·慕尼黑', venue:'ICM 国际会议中心',
+     format:'线上+线下', url:'https://www.esmo.org/meeting-calendar/esmo-gastrointestinal-cancers-congress-2026',
+     notes:'投稿截止 2026-04-07|LBA 截止 2026-06-04'},
+    {id:'c13', isSample:true, abbr:'ESMO GYN 2026', name:'ESMO 妇科肿瘤大会 ESMO Gynaecological Cancers Congress 2026',
+     tags:['妇科肿瘤'], group:'妇科肿瘤', deadline:'2026-03-31', lbaDeadline:'', regDeadline:'',
+     startDate:'2026-06-17', endDate:'2026-06-19', location:'丹麦·哥本哈根', venue:'Bella Center',
+     format:'线上+线下', url:'https://www.esmo.org/meeting-calendar/esmo-gynaecological-cancers-congress-2026',
+     notes:'投稿截止 2026-03-31'},
+    {id:'c14', isSample:true, abbr:'ESMO TAT Asia 2026', name:'ESMO 亚洲靶向抗癌治疗大会 ESMO Targeted Anticancer Therapies Asia Congress 2026',
+     tags:['肺癌','乳腺癌','妇科肿瘤','血液肿瘤','消化道肿瘤'], group:'综合肿瘤', deadline:'2026-03-31', lbaDeadline:'', regDeadline:'2026-06-03',
+     startDate:'2026-06-12', endDate:'2026-06-14', location:'中国香港', venue:'Kerry Hotel 香港',
+     format:'线上+线下', url:'https://www.esmo.org',
+     notes:'投稿截止 2026-03-31|注册优惠截止 2026-06-03'},
+    {id:'c15', isSample:true, abbr:'IGCS 2026', name:'国际妇科肿瘤学会年会 IGCS 2026 Annual Global Meeting',
+     tags:['妇科肿瘤'], group:'妇科肿瘤', deadline:'2026-05-04', lbaDeadline:'', regDeadline:'',
+     startDate:'2026-10-01', endDate:'2026-10-03', location:'加拿大·蒙特利尔', venue:'Palais des Congrès de Montréal',
+     format:'线上+线下', url:'https://igcsmeeting.com',
+     notes:'投稿截止 2026-05-04|接收通知 2026-06-10|签证建议至少提前 6 个月申请（2026 世界杯期间加签处理慢）'},
+    {id:'c16', isSample:true, abbr:'KINGCA WEEK 2026', name:'韩国国际胃癌周 Korea International Gastric Cancer Week 2026',
+     tags:['消化道肿瘤'], group:'消化道肿瘤', deadline:'2026-05-29', lbaDeadline:'', regDeadline:'2026-07-31',
+     startDate:'2026-09-17', endDate:'2026-09-19', location:'韩国·首尔', venue:'Lotte Hotel Seoul 首尔乐天酒店',
+     format:'线上+线下', url:'https://www.kingca.org',
+     notes:'韩国胃癌协会（KGCA）主办 30 周年|投稿截止 2026-05-29|提前注册截止 2026-07-31'},
+    {id:'c17', isSample:true, abbr:'KSMO & FACO 2026', name:'韩国临床肿瘤学会第19届年会暨第14届FACO国际会议',
+     tags:['肺癌','乳腺癌','妇科肿瘤','血液肿瘤','消化道肿瘤'], group:'综合肿瘤', deadline:'2026-05-28', lbaDeadline:'', regDeadline:'2026-05-15',
+     startDate:'2026-09-02', endDate:'2026-09-04', location:'韩国·首尔', venue:'Grand InterContinental Seoul Parnas',
+     format:'线上+线下', url:'https://www.ksmoconference.org',
+     notes:'主题"Advancing Cancer Care, Restoring Hope and Lives"|官网原定投稿截止 5/8（后延至 5/28）|早鸟注册截止 5/15'},
+    {id:'c18', isSample:true, abbr:'WCLC 2026', name:'世界肺癌大会（第27届）IASLC World Conference on Lung Cancer 2026',
+     tags:['肺癌'], group:'肺癌', deadline:'2026-04-01', lbaDeadline:'2026-08-05', regDeadline:'2026-06-12',
+     startDate:'2026-09-12', endDate:'2026-09-15', location:'韩国·首尔', venue:'COEX 会议展览中心',
+     format:'线上+线下', url:'https://wclc.iaslc.org',
+     notes:'投稿截止 2026-04-01|接收通知 2026-05-27|早鸟注册截止 2026-06-12|LBA 截止 2026-08-05'},
+    {id:'c19', isSample:true, abbr:'USCAP 2027', name:'美国和加拿大病理学会年会（第116届）USCAP 116th Annual Meeting',
+     tags:['病理/诊断'], group:'病理/诊断', deadline:'2026-09-24', lbaDeadline:'', regDeadline:'',
+     startDate:'2027-03-13', endDate:'2027-03-18', location:'加拿大·温哥华', venue:'Vancouver Convention Centre',
+     format:'仅线下', url:'https://uscap.org/uscap-annual-meeting/',
+     notes:'摘要截止 2026-09-24 11:00 PDT（无 LBA，投稿费 $50/篇，第一作者最多接收 3 篇）|接收通知 2026 年 10 月下旬|壁报与口头报告均须现场出席，无线上报告|早鸟注册截止以官网公布为准'}
+,
+    {id:'c20', isSample:true, abbr:'SABCS 2026', name:'San Antonio Breast Cancer Symposium（第49届）SABCS 2026',
+     tags:['乳腺癌'], group:'乳腺癌', deadline:'2026-07-13', lbaDeadline:'2026-09-30', regDeadline:'2026-09-25',
+     startDate:'2026-12-08', endDate:'2026-12-11', location:'美国·圣安东尼奥', venue:'Henry B. Gonzalez Convention Center',
+     format:'仅线下', url:'https://sabcs.org/',
+     notes:'常规摘要截止 2026-07-13（已截止）|LBA 截止 2026-09-30（仍开放）|早鸟注册截止 2026-09-25|AACR 联合主办'}
+,
+    {id:'c21', isSample:true, abbr:'ESMO BC 2026', name:'ESMO Breast Cancer Annual Congress 2026',
+     tags:['乳腺癌'], group:'乳腺癌', deadline:'2026-01-27', lbaDeadline:'2026-03-31', regDeadline:'',
+     startDate:'2026-05-06', endDate:'2026-05-08', location:'德国·柏林', venue:'hub27 Messe Berlin',
+     format:'线上+线下', url:'https://www.esmo.org/meeting-calendar/esmo-breast-cancer-2026',
+     notes:'常规摘要截止 2026-01-27（已截止）|LBA 截止 2026-03-31（已截止）|会议已于 2026-05 召开'}
+,
+    {id:'c22', isSample:true, abbr:'SIBCS 2026', name:'第19届全国乳腺癌会议暨第21届上海国际乳腺癌论坛 SIBCS 2026',
+     tags:['乳腺癌'], group:'乳腺癌', deadline:'2026-09-05', lbaDeadline:'', regDeadline:'',
+     startDate:'2026-10-16', endDate:'2026-10-17', location:'中国·上海', venue:'上海',
+     format:'仅线下', url:'http://www.sibcs.com',
+     notes:'征文截止 2026-09-05（已截止）|优秀论文颁奖 2026-10-17'}
+,
+    {id:'c23', isSample:true, abbr:'CMA-CSH 2026', name:'中华医学会第二十次血液学学术会议 CMA-CSH 2026',
+     tags:['血液肿瘤'], group:'血液肿瘤', deadline:'2026-07-31', lbaDeadline:'', regDeadline:'',
+     startDate:'2026-10-30', endDate:'2026-11-01', location:'中国·重庆', venue:'重庆悦来国际会议中心',
+     format:'仅线下', url:'http://www.cmacsh.org',
+     notes:'征文截止 2026-07-31（已截止）|涵盖白血病/淋巴瘤/骨髓瘤/MDS/MPN/血栓止血/红细胞疾病/造血干细胞移植/细胞治疗/基因治疗/血液重症等'}
+,
+    {id:'c24', isSample:true, abbr:'EHA 2026', name:'欧洲血液学年会（第31届）European Hematology Association Annual Congress 2026',
+     tags:['血液肿瘤'], group:'血液肿瘤', deadline:'2026-03-01', lbaDeadline:'2026-05-07', regDeadline:'2026-05-04',
+     startDate:'2026-06-11', endDate:'2026-06-14', location:'瑞典·斯德哥尔摩', venue:'Stockholmsmässan',
+     format:'线上+线下', url:'https://ehaweb.org/',
+     notes:'常规摘要截止 2026-03-01（已截止）|LBA 截止 2026-05-07（已截止）|早鸟注册 2026-05-04（已截止）|会议已于 2026-06 召开'}
+,
+    {id:'c25', isSample:true, abbr:'ASH 2026', name:'美国血液学会年会（第68届）ASH Annual Meeting and Exposition 2026',
+     tags:['血液肿瘤'], group:'血液肿瘤', deadline:'2026-08-04', lbaDeadline:'2026-10-28', regDeadline:'',
+     startDate:'2026-12-12', endDate:'2026-12-15', location:'美国·新奥尔良', venue:'New Orleans Convention Center',
+     format:'线上+线下', url:'https://www.hematology.org/Meetings/Annual-Meeting',
+     notes:'常规摘要截止 2026-08-04（已截止）|LBA 截止 2026-10-28（仍开放）|需至少一名作者为 ASH 会员或由 ASH 会员 sponsor'}
+,
+    {id:'c26', isSample:true, abbr:'ESC 2026', name:'欧洲心脏病学会年会 ESC Congress 2026',
+     tags:['心血管'], group:'心血管', deadline:'2026-03-01', lbaDeadline:'2026-06-01', regDeadline:'2026-05-31',
+     startDate:'2026-08-28', endDate:'2026-08-31', location:'德国·慕尼黑', venue:'Messe München',
+     format:'线上+线下', url:'https://www.escardio.org/Congresses-Events/ESC-Congress',
+     notes:'常规摘要截止 2026-03-01（已截止）|LBA 截止 2026-06-01（已截止）|早鸟注册 2026-05-31（已截止）|会议已于 2026-08 召开|心血管领域全球最大会议'}
+,
+    {id:'c27', isSample:true, abbr:'GW-ICC 2026', name:'第37届长城心脏病学大会暨亚洲心脏大会 GW-ICC/AHS 2026',
+     tags:['心血管'], group:'心血管', deadline:'2026-07-01', lbaDeadline:'', regDeadline:'',
+     startDate:'2026-10-15', endDate:'2026-10-18', location:'中国·北京', venue:'北京国家会议中心',
+     format:'线上+线下', url:'http://www.gw-icc.com',
+     notes:'征文截止 2026-07-01（已截止）|病例征集结果 2026-09-10|1989 年胡大一教授与意大利 Di Sciascio 教授创立'}
+,
+    {id:'c28', isSample:true, abbr:'APBCS 2027', name:'第15届亚太乳腺癌峰会 Asia-Pacific Breast Cancer Summit 2027',
+     tags:['乳腺癌'], group:'乳腺癌', deadline:'2026-10-02', lbaDeadline:'', regDeadline:'',
+     startDate:'2027-01-22', endDate:'2027-01-24', location:'新加坡', venue:'Grand Hyatt Singapore 新加坡君悦酒店',
+     format:'线下', url:'https://apbcs.org/',
+     notes:'摘要截止 2026-10-02'},
+    {id:'c29', isSample:true, abbr:'SGBCC 2027', name:'第20届圣加伦国际乳腺癌大会 St. Gallen International Breast Cancer Conference 2027',
+     tags:['乳腺癌'], group:'乳腺癌', deadline:'2026-12-15', lbaDeadline:'', regDeadline:'2026-12-15',
+     startDate:'2027-03-17', endDate:'2027-03-20', location:'奥地利·维也纳', venue:'Austria Center Vienna',
+     format:'', url:'https://www.sg-bcc.org/',
+     notes:'主题：早期乳腺癌治疗 Evidence, Controversies, Consensus|摘要截止与早鸟注册截止均为 2026-12-15|常规注册费截止 2027-02-28|接收通知 2027 年 1 月（e-poster 形式，优秀者作口头报告）'},
+    {id:'c30', isSample:true, abbr:'JSMO 2027', name:'日本肿瘤内科学会年会（第24届）JSMO 2027',
+     tags:['肺癌','乳腺癌','妇科肿瘤','血液肿瘤','消化道肿瘤'], group:'综合肿瘤', deadline:'2026-09-17', lbaDeadline:'', regDeadline:'',
+     startDate:'2027-03-18', endDate:'2027-03-20', location:'日本·金泽', venue:'Ishikawa Ongakudo 石川音乐厅等',
+     format:'线上+线下', url:'https://www.c-linkage.co.jp/jsmo2027/en/',
+     notes:'主题 "Bridging our research and medical care for cancer patients"|会长：矢野成二（金泽大学）|投稿截止 2026-09-17|2028 年为京都（3/9-11）'},
+    {id:'c31', isSample:true, abbr:'AACR 2027', name:'美国癌症研究协会年会（第118届）AACR Annual Meeting 2027',
+     tags:['肺癌','乳腺癌','妇科肿瘤','血液肿瘤','消化道肿瘤'], group:'综合肿瘤', deadline:'2026-11-10', lbaDeadline:'2027-01-06', regDeadline:'2026-12-07',
+     startDate:'2027-04-02', endDate:'2027-04-07', location:'美国·奥兰多', venue:'Orange County Convention Center',
+     format:'线上+线下', url:'https://www.aacr.org/meeting/aacr-annual-meeting-2027/',
+     notes:'常规摘要截止 2026-11-10 23:59 ET（已开放）|LBA/临床试验摘要截止 2027-01-06|早鸟注册 2026-12-07|壁报与口头报告须现场出席'},
+    {id:'c32', isSample:true, abbr:'ASCO 2027', name:'美国临床肿瘤学会年会 ASCO Annual Meeting 2027',
+     tags:['肺癌','乳腺癌','妇科肿瘤','血液肿瘤','消化道肿瘤'], group:'综合肿瘤', deadline:'2027-01-27', lbaDeadline:'', regDeadline:'',
+     startDate:'2027-05-29', endDate:'2027-06-02', location:'美国·芝加哥', venue:'McCormick Place',
+     format:'线上+线下', url:'https://www.asco.org/annual-meeting',
+     notes:'投稿截止 2027-01-27'},
+    {id:'c33', isSample:true, abbr:'ESMO BC 2027', name:'ESMO 乳腺癌大会 ESMO Breast Cancer Annual Congress 2027',
+     tags:['乳腺癌'], group:'乳腺癌', deadline:'2027-01-27', lbaDeadline:'', regDeadline:'',
+     startDate:'2027-05-06', endDate:'2027-05-08', location:'德国·柏林', venue:'柏林（具体会场见官网）',
+     format:'线上+线下', url:'https://www.esmo.org/meeting-calendar',
+     notes:'投稿截止 2027-01-27'},
+    {id:'c34', isSample:true, abbr:'ESMO TAT Asia 2027', name:'ESMO 亚洲靶向抗癌治疗大会 ESMO Targeted Anticancer Therapies Asia Congress 2027',
+     tags:['肺癌','乳腺癌','妇科肿瘤','血液肿瘤','消化道肿瘤'], group:'综合肿瘤', deadline:'2027-03-31', lbaDeadline:'', regDeadline:'',
+     startDate:'2027-06-12', endDate:'2027-06-14', location:'中国香港', venue:'香港（具体会场见官网）',
+     format:'线上+线下', url:'https://www.esmo.org',
+     notes:'投稿截止 2027-03-31'},
+    {id:'c35', isSample:true, abbr:'JBCS 2027', name:'日本乳腺癌学会学术总会（第35届）JBCS 2027',
+     tags:['乳腺癌'], group:'乳腺癌', deadline:'2026-12-17', lbaDeadline:'', regDeadline:'',
+     startDate:'2027-07-08', endDate:'2027-07-10', location:'日本·熊本', venue:'Kumamoto-Jo Hall 熊本城厅等',
+     format:'线上+线下', url:'https://www.c-linkage.co.jp/jbcs2027/',
+     notes:'会长：山本豊（熊本大学）|投稿截止 2026-12-17|2028 年为札幌（6/29-7/1）'},
+    {id:'c36', isSample:true, abbr:'ESMO 2027', name:'欧洲肿瘤内科学会年会 ESMO Congress 2027',
+     tags:['肺癌','乳腺癌','妇科肿瘤','血液肿瘤','消化道肿瘤'], group:'综合肿瘤', deadline:'', lbaDeadline:'', regDeadline:'',
+     startDate:'2027-09-17', endDate:'2027-09-21', location:'西班牙·巴塞罗那', venue:'Fira Barcelona Gran Via',
+     format:'线上+线下', url:'https://www.esmo.org/meeting-calendar/esmo-congress-2027',
+     notes:'投稿截止官网尚未公布|会场 Fira Barcelona Gran Via|大会主席 Giuseppe Curigliano'},
+    {id:'c37', isSample:true, abbr:'JSCO 2027', name:'日本癌治疗学会学术集会（第65届）JSCO 2027',
+     tags:['肺癌','乳腺癌','妇科肿瘤','血液肿瘤','消化道肿瘤'], group:'综合肿瘤', deadline:'', lbaDeadline:'', regDeadline:'',
+     startDate:'2027-10-14', endDate:'2027-10-16', location:'日本·福冈', venue:'Fukuoka Convention Center 福冈国际会议中心',
+     format:'', url:'https://www.jsco.or.jp/eng/annualmeeting/future.html',
+     notes:'2027-10-14~16 福冈|投稿截止官网尚未公布'}
+    ,
+    {id:'c38', isSample:true, abbr:'EASD 2027', name:'欧洲糖尿病研究协会年会（第63届）EASD Annual Meeting 2027',
+     tags:['糖尿病'], group:'糖尿病', deadline:'', lbaDeadline:'', regDeadline:'',
+     startDate:'2027-09-21', endDate:'2027-09-24', location:'匈牙利·布达佩斯', venue:'HUNGEXPO Budapest Congress and Exhibition Centre',
+     format:'', url:'https://www.easd.org/annual-meeting/',
+     notes:'投稿截止官网尚未公布|会议 2027-09-21~24 布达佩斯 HUNGEXPO'},
+    {id:'c39', isSample:true, abbr:'IASP 2028', name:'世界疼痛大会（第22届）IASP World Congress on Pain 2028（下一届，日期与主办城市待定）',
+     tags:['镇痛'], group:'镇痛', deadline:'', lbaDeadline:'', regDeadline:'',
+     startDate:'', endDate:'', location:'', venue:'',
+     format:'', url:'https://www.iasp-pain.org/events/world-congress-on-pain',
+     notes:'第22届世界疼痛大会 2028（双年制，2027 无届）；日期与主办城市待 2026-10 法国大会公布，候选城市 墨尔本/坎皮纳斯/维沙卡帕特南'},
+    {id:'c40', isSample:true, abbr:'AAN 2027', name:'美国神经病学学会年会 American Academy of Neurology Annual Meeting 2027',
+     tags:['神经'], group:'神经', deadline:'2026-10-13', lbaDeadline:'2027-02-10', regDeadline:'',
+     startDate:'2027-05-01', endDate:'2027-05-05', location:'美国·华盛顿特区', venue:'Washington, DC',
+     format:'线上+线下', url:'https://www.aan.com/AM',
+     notes:'常规投稿截止 2026-10-13（已截止）|常规投稿已关闭；常规投稿结果通知 2027年1月底|LBA投稿截止 2027-02-10|LBA投稿结果通知 2027年3月中|会议 2027-05-01~05 华盛顿特区'},
+    {id:'c41', isSample:true, abbr:'IDF 2027', name:'国际糖尿病联盟世界糖尿病大会 IDF World Diabetes Congress 2027',
+     tags:['糖尿病'], group:'糖尿病', deadline:'2026-09-30', lbaDeadline:'2026-12-21', regDeadline:'2026-11-30',
+     startDate:'2027-04-09', endDate:'2027-04-12', location:'新加坡', venue:'Singapore EXPO',
+     format:'', url:'https://idf2027.org/',
+     notes:'常规摘要截止 2026-09-30（已截止）|LBA 截止 2026-12-21|早鸟注册截止 2026-11-30|接收通知 待官网公布'},
+    {id:'c42', isSample:true, abbr:'JDS 2027', name:'日本糖尿病学会年会（第70届）Japan Diabetes Society 70th Annual Meeting 2027',
+     tags:['糖尿病'], group:'糖尿病', deadline:'', lbaDeadline:'', regDeadline:'',
+     startDate:'2027-05-21', endDate:'2027-05-23', location:'日本·东京', venue:'Tokyo International Forum & JP Tower Hall',
+     format:'', url:'https://www.jds.or.jp/',
+     notes:'投稿截止官网尚未公布|会议 2027-05-21~23 东京'},
+    {id:'c43', isSample:true, abbr:'ADA 2027', name:'美国糖尿病协会科学会议（第87届）ADA 87th Scientific Sessions 2027',
+     tags:['糖尿病'], group:'糖尿病', deadline:'2027-01-05', lbaDeadline:'2027-03-08', regDeadline:'',
+     startDate:'2027-06-18', endDate:'2027-06-21', location:'美国·华盛顿特区', venue:'Walter E. Washington Convention Center',
+     format:'线上+线下', url:'https://scientificsessions.diabetes.org/',
+     notes:'常规摘要截止 2027-01-05 17:00 ET|LBA 截止 2027-03-08|接收通知 2027-03-02'},
+    {id:'c44', isSample:true, abbr:'EAN 2027', name:'欧洲神经病学学会大会（第13届）European Academy of Neurology 13th Congress 2027',
+     tags:['神经'], group:'神经', deadline:'2027-01-14', lbaDeadline:'2027-05-05', regDeadline:'',
+     startDate:'2027-06-12', endDate:'2027-06-15', location:'瑞典·哥德堡', venue:'Gothia Towers, Gothenburg',
+     format:'', url:'https://www.ean.org/',
+     notes:'常规投稿截止 2027-01-14|常规投稿结果通知 2027年3月中|LBA投稿截止 2027-05-05|LBA投稿结果通知 2027年5月中|会议 2027-06-12~15 哥德堡'},
+    {id:'c45', isSample:true, abbr:'AASD 2027', name:'亚洲糖尿病研究协会学术会议（第19届）Asian Association for the Study of Diabetes 19th Scientific Meeting 2027',
+     tags:['糖尿病'], group:'糖尿病', deadline:'', lbaDeadline:'', regDeadline:'',
+     startDate:'', endDate:'', location:'', venue:'',
+     format:'', url:'https://www.aa-sd.org/',
+     notes:'第19届，日期与地点待官网公布（通常随 JDS 年会同期举办）'}
+    ,
+    {id:'c46', isSample:true, abbr:'WCN 2027', name:'世界神经病学大会（第28届）World Congress of Neurology (WCN) 2027',
+     tags:['神经'], group:'神经', deadline:'', lbaDeadline:'', regDeadline:'',
+     startDate:'2027-10-23', endDate:'2027-10-25', location:'南非·开普敦', venue:'Cape Town, South Africa',
+     format:'', url:'https://www.wcn-neurology.com/',
+     notes:'摘要投稿已开放（截止日期待官网公布）|会议 2027-10-23~25 开普敦'},
+    {id:'c47', isSample:true, abbr:'WIP 2027', name:'世界疼痛学会世界大会（WIP World Congress 2027，城市待官网确认）',
+     tags:['镇痛'], group:'镇痛', deadline:'', lbaDeadline:'', regDeadline:'',
+     startDate:'2027-05-20', endDate:'2027-05-23', location:'', venue:'',
+     format:'', url:'https://wipcongress.com/',
+     notes:'WIP 2027 世界大会 拟 2027-05-20~23（日期来源 congressagenda，城市待官网确认）；摘要投稿截止待公布'},
+    {id:'c48', isSample:true, abbr:'NeuPSIG 2027', name:'国际神经病理性疼痛大会（第10届）IASP Neuropathic Pain SIG · NeuPSIG 2027',
+     tags:['镇痛'], group:'镇痛', deadline:'', lbaDeadline:'', regDeadline:'',
+     startDate:'2027-09-02', endDate:'2027-09-04', location:'芬兰·赫尔辛基', venue:'Messukeskus Helsinki (Helsinki Expo and Convention Centre)',
+     format:'', url:'https://neupsigcongress.org/',
+     notes:'摘要投稿已开放（截止日期待官网公布）|workshop 提案截止 2026-11-16|会议 2027-09-02~04 赫尔辛基'}
+  ];
+}
+function seedSubmissions(){ return []; }
+
+var data = { conferences: [], submissions: [] };
+
+function loadData(){
+  try{
+    var raw = localStorage.getItem(STORE_KEY);
+    if(raw){
+      var parsed = JSON.parse(raw);
+      data.conferences = Array.isArray(parsed.conferences) ? parsed.conferences : [];
+      data.submissions = Array.isArray(parsed.submissions) ? parsed.submissions : [];
+    }else{
+      data.conferences = seedConferences();
+      data.submissions = seedSubmissions();
+      saveData();
+    }
+  }catch(e){
+    data.conferences = [];
+    data.submissions = [];
+  }
+}
+function saveData(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(data)); }
+  catch(e){ console.warn('保存失败：浏览器存储不可用', e); }
+}
+
+/* ---------------- 计算层 ---------------- */
+function todayStr(){
+  var d = new Date();
+  return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
+}
+function pad2(n){ return n < 10 ? '0' + n : '' + n; }
+function daysDiff(aStr, bStr){
+  if(!aStr || !bStr) return null;
+  var a = Date.UTC(aStr.slice(0,4), aStr.slice(5,7)-1, aStr.slice(8,10));
+  var b = Date.UTC(bStr.slice(0,4), bStr.slice(5,7)-1, bStr.slice(8,10));
+  return Math.round((b - a) / 86400000);
+}
+function fmtDate(s){
+  if(!s) return '—';
+  var m = ['','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  return m[parseInt(s.slice(5,7),10)] + parseInt(s.slice(8,10),10) + '日';
+}
+function fmtDateFull(s){
+  if(!s) return '—';
+  return s.slice(0,4) + '年' + fmtDate(s);
+}
+function confStatus(c){
+  var today = todayStr();
+  if(c.endDate && daysDiff(today, c.endDate) < 0) return {key:'ended', badge:'已结束', cls:'gray'};
+  if(c.startDate){
+    var toStart = daysDiff(today, c.startDate);
+    if(toStart >= 0 && toStart <= 14) return {key:'upcoming', badge:'即将举行', cls:'blue'};
+  }
+  if(c.deadline){
+    var dl = daysDiff(today, c.deadline);
+    if(dl < 0) return {key:'closed', badge:'已截止', cls:'gray'};
+    if(dl <= 7) return {key:'soon', badge:'即将截止', cls:'orange'};
+    return {key:'open', badge:'投稿开放中', cls:'green'};
+  }
+  return {key:'notstarted', badge:'未开始', cls:'gray'};
+}
+/* 下拉框筛选用互斥口径：ended > upcoming > open(含soon) > closed > notstarted */
+function statusBucket(c){
+  var today = todayStr();
+  if(c.endDate && daysDiff(today, c.endDate) < 0) return 'ended';
+  if(c.startDate){
+    var toStart = daysDiff(today, c.startDate);
+    if(toStart >= 0 && toStart <= 14) return 'upcoming';
+  }
+  if(c.deadline) return daysDiff(today, c.deadline) < 0 ? 'closed' : 'open';
+  return 'notstarted';
+}
+
+/* ---------------- 渲染层 ---------------- */
+function esc(str){
+  if(str === undefined || str === null) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function daysChip(dateStr){
+  return '';
+}
+/* 卡片底部只呈现「投稿结果通知」类信息（接收通知/录用/结果），其余截止日期等已在上方结构化网格展示，避免重复；无则整块不渲染 */
+function noteNotificationText(c){
+  if(!c || !c.notes) return '';
+  var segs = String(c.notes).split('|');
+  var keep = [];
+  for(var i = 0; i < segs.length; i++){
+    var s = segs[i].trim();
+    if(!s) continue;
+    if(/通知|录用|结果/.test(s)){
+      /* 标签已写明「投稿结果通知」，正文去掉重复的「接收通知/通知」前缀，只留具体内容 */
+      s = s.replace(/^(接收通知|录用通知|投稿通知|通知)\s*[:：]?\s*/, '');
+      if(s) keep.push(s);
+    }
+  }
+  return keep.join(' | ');
+}
+
+function renderStats(){
+  var open = 0, soon = 0, i;
+  for(i = 0; i < data.conferences.length; i++){
+    var st = confStatus(data.conferences[i]);
+    if(st.key === 'open' || st.key === 'soon') open++;
+    if(st.key === 'soon') soon++;
+  }
+  var html =
+    '<div class="stat-card"><div class="stat-num">' + data.conferences.length + '</div><span class="stat-label">会议总数</span></div>' +
+    '<div class="stat-card green"><div class="stat-num">' + open + '</div><span class="stat-label">投稿开放中</span></div>' +
+    '<div class="stat-card orange"><div class="stat-num">' + soon + '</div><span class="stat-label">7 天内截止</span></div>';
+  document.getElementById('statsRow').innerHTML = html;
+}
+
+/* ---- 大会信息库 ---- */
+var confFilters = new Set();
+
+function renderConfList(){
+  var q = (document.getElementById('confSearch').value || '').trim().toLowerCase();
+  var sf = document.getElementById('statusFilter').value || '';
+  var list = [];
+  for(var i = 0; i < data.conferences.length; i++){
+    var c = data.conferences[i];
+    if(confFilters.size > 0){
+      var hit = false;
+      /* 「综合肿瘤」按主分组匹配；其余标签按 tags 多标签匹配 */
+      if(confFilters.has('综合肿瘤') && c.group === '综合肿瘤') hit = true;
+      if(!hit){
+        var tags = c.tags || [];
+        for(var t = 0; t < tags.length; t++){ if(confFilters.has(tags[t])){ hit = true; break; } }
+      }
+      if(!hit) continue;
+    }
+    if(sf && statusBucket(c) !== sf) continue;
+    if(q){
+      var blob = [c.name, c.abbr, c.location, c.venue, (c.tags || []).join(' '), c.notes].join(' ').toLowerCase();
+      if(blob.indexOf(q) === -1) continue;
+    }
+    list.push(c);
+  }
+  list.sort(function(a,b){ return (a.startDate || '9999').localeCompare(b.startDate || '9999'); });
+  var box = document.getElementById('confList');
+  if(list.length === 0){
+    box.innerHTML = '<div class="empty-box">没有符合条件的大会，换个关键词或筛选条件试试</div>';
+    return;
+  }
+  var html = '';
+  for(var k = 0; k < list.length; k++){
+    html += confCardHtml(list[k], k);
+  }
+  box.innerHTML = html;
+}
+
+function confCardHtml(c, idx){
+  var st = confStatus(c);
+  var dateRange = (c.startDate && c.endDate)
+    ? fmtDateFull(c.startDate) + ' – ' + (c.startDate.slice(0,4) === c.endDate.slice(0,4) ? fmtDate(c.endDate) : fmtDateFull(c.endDate))
+    : '待定';
+  var urlHtml = c.url
+    ? '<a href="' + esc(c.url) + '" target="_blank" rel="noopener">' + esc(c.url.replace(/^https?:\/\//,'').slice(0,40)) + '…</a>'
+    : '—';
+  var delay = Math.min(idx * 50, 800);
+  var notifText = noteNotificationText(c);
+  var tags = c.tags && c.tags.length ? c.tags : ['未分类'];
+  var tagsHtml = '';
+  for(var ti = 0; ti < tags.length; ti++){
+    tagsHtml += '<span class="badge blue">' + esc(tags[ti]) + '</span>';
+  }
+  return '<div class="conf-card" style="animation-delay:' + delay + 'ms">' +
+    '<div class="cc-hero ' + esc(st.cls) + '">' +
+      '<div style="flex:1;min-width:200px;">' +
+        '<span class="cc-abbr">' + esc(c.abbr) + '</span>' +
+        '<div class="cc-name">' + esc(c.name) + '</div>' +
+      '</div>' +
+      '<div class="cc-badges">' +
+        tagsHtml +
+        (c.format ? '<span class="badge gray">' + esc(c.format) + '</span>' : '') +
+        '<span class="badge ' + st.cls + '">' + st.badge + '</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="cc-body">' +
+      '<div class="cc-grid">' +
+        '<div class="cc-item"><div class="k">常规投稿截止</div><div class="v">' + fmtDateFull(c.deadline) + '</div>' + daysChip(c.deadline) + '</div>' +
+        '<div class="cc-item"><div class="k">LBA 截止</div><div class="v">' + fmtDateFull(c.lbaDeadline) + '</div>' + daysChip(c.lbaDeadline) + '</div>' +
+        '<div class="cc-item"><div class="k">早鸟注册截止</div><div class="v">' + fmtDateFull(c.regDeadline) + '</div>' + daysChip(c.regDeadline) + '</div>' +
+        '<div class="cc-item"><div class="k">会议时间</div><div class="v">' + dateRange + '</div></div>' +
+        '<div class="cc-item"><div class="k">地点</div><div class="v">' + esc(c.location || '—') + '</div><div class="v-meta">' + esc(c.venue || '') + '</div></div>' +
+        '<div class="cc-item"><div class="k">官网链接</div><div class="v">' + urlHtml + '</div></div>' +
+      '</div>' +
+    '</div>' +
+    (notifText ? '<div class="cc-notes"><div class="cc-notes-label">投稿结果通知</div>' + esc(notifText) + '</div>' : '') +
+  '</div>';
+}
+
+/* ---- 年度时间轴（按 group 主分组：综合大会归「综合肿瘤」组，专科归各自瘤种组）---- */
+var TL_CATEGORIES = [
+  {key:"综合肿瘤",      color:"#1E40AF"},
+  {key:"肺癌",          color:"#8B5CF6"},
+  {key:"乳腺癌",        color:"#EC4899"},
+  {key:"妇科肿瘤",      color:"#F43F5E"},
+  {key:"血液肿瘤",      color:"#DC2626"},
+  {key:"消化道肿瘤",    color:"#F59E0B"},
+  {key:"病理/诊断",     color:"#06B6D4"},
+  {key:"糖尿病",        color:"#059669"},
+  {key:"神经",          color:"#6366F1"},
+  {key:"镇痛",          color:"#0EA5E9"},
+  {key:"心血管",        color:"#64748B"}
+];
+function confGroup(c){
+  if(c.group) return c.group;
+  var t = c.tags || [];
+  return t.length ? t[t.length - 1] : "综合肿瘤";
+}
+function renderTimeline(){
+  var box = document.getElementById("timelineBox");
+  var confs = [];
+  for(var i = 0; i < data.conferences.length; i++){
+    if(data.conferences[i].startDate && data.conferences[i].endDate) confs.push(data.conferences[i]);
+  }
+  if(confs.length === 0){
+    box.innerHTML = '<div class="empty-box" style="box-shadow:none;border:none;">暂无会议数据。录入了「开始/结束日期」的会议会出现在时间轴上</div>';
+    return;
+  }
+  /* 动态窗口：以「今天」为中心，前后各一年；有更晚的会议时自动向右扩展 */
+  var today = todayStr();
+  var tlStart = addDays(today, -365);
+  var tlEnd = addDays(today, 365);
+  for(i = 0; i < confs.length; i++){
+    if(confs[i].endDate > tlEnd) tlEnd = confs[i].endDate;
+  }
+  tlEnd = addDays(tlEnd, 7);
+  var groups = {};
+  for(i = 0; i < confs.length; i++){
+    var k = confGroup(confs[i]);
+    if(!groups[k]) groups[k] = [];
+    groups[k].push(confs[i]);
+  }
+  for(var gk in groups){
+    groups[gk].sort(function(a,b){ return a.startDate.localeCompare(b.startDate); });
+  }
+  var html = "";
+  for(var ci = 0; ci < TL_CATEGORIES.length; ci++){
+    var cat = TL_CATEGORIES[ci];
+    var list = groups[cat.key];
+    if(!list || list.length === 0) continue;
+    html += renderTimelineGroup(cat, list, tlStart, tlEnd);
+  }
+  for(var gk2 in groups){
+    var known = false;
+    for(var ci2 = 0; ci2 < TL_CATEGORIES.length; ci2++){ if(TL_CATEGORIES[ci2].key === gk2){ known = true; break; } }
+    if(!known) html += renderTimelineGroup({key:gk2, color:"#94A3B8"}, groups[gk2], tlStart, tlEnd);
+  }
+  box.innerHTML = html;
+}
+
+function renderTimelineGroup(cat, list, tlStart, tlEnd){
+  var W = 1000, padL = 150, padR = 24, top = 40, rowH = 28;
+  var H = top + list.length * rowH + 10;
+  var span = Math.max(1, daysDiff(tlStart, tlEnd));
+  var today = todayStr();
+  function xFn(dateStr){
+    var d = daysDiff(tlStart, dateStr);
+    if(d < 0) d = 0;
+    if(d > span) d = span;
+    return padL + d / span * (W - padL - padR);
+  }
+  /* 月份网格：从窗口起点所在月起逐月推进 */
+  var grid = "";
+  var ym = tlStart.slice(0,7);
+  var endYm = tlEnd.slice(0,7);
+  while(ym <= endYm){
+    var mm = parseInt(ym.slice(5,7),10);
+    var isQ = (mm === 1 || mm === 4 || mm === 7 || mm === 10);
+    var isJan = (mm === 1);
+    var mPast = nextMonth(ym) <= today; /* 整月已过去 */
+    var gx = xFn(ym + "-01");
+    if(gx >= padL - 1 && gx <= W - padR){
+      var lbl = isJan ? ym.slice(0,4) : (mm + "月");
+      var lblCol = mPast ? "#C4CBD6" : (isJan ? "#0F172A" : "#94A3B8");
+      grid += '<line x1="' + gx.toFixed(1) + '" y1="' + (top - 22) + '" x2="' + gx.toFixed(1) + '" y2="' + (H - 4) + '" stroke="' + (isQ ? "#E2E8F0" : "#F1F5F9") + '" stroke-width="1"' + (isQ ? ' stroke-dasharray="3 3"' : "") + '/>';
+      grid += '<text x="' + gx.toFixed(1) + '" y="' + (top - 26) + '" text-anchor="middle" font-size="9.5" font-weight="' + (isJan ? "700" : "500") + '" fill="' + lblCol + '">' + lbl + '</text>';
+    }
+    ym = nextMonth(ym);
+  }
+  /* 今天线：位于窗口中央；过去区域加浅灰蒙版 */
+  var todayX = xFn(today);
+  var maskW = Math.max(0, todayX - padL);
+  if(maskW > 0){
+    grid += '<rect x="' + padL + '" y="' + (top - 24) + '" width="' + maskW.toFixed(1) + '" height="' + (H - top + 18) + '" fill="#64748B" opacity="0.06"/>';
+  }
+  grid += '<line x1="' + todayX.toFixed(1) + '" y1="' + (top - 20) + '" x2="' + todayX.toFixed(1) + '" y2="' + (H - 4) + '" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="3 3"/>';
+  grid += '<text x="' + todayX.toFixed(1) + '" y="' + Math.round((top + H) / 2) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#EF4444" stroke="#fff" stroke-width="3.5" paint-order="stroke">TODAY ' + today.slice(5).replace('-','/') + '</text>';
+  function dm(dateStr, color, lbl, y){
+    if(!dateStr) return "";
+    var mx = xFn(dateStr);
+    var past = daysDiff(today, dateStr) < 0;
+    var col = past ? "#94A3B8" : color;
+    if(mx < padL) mx = padL + 4;
+    if(mx > W - padR) mx = W - padR - 4;
+    var hf = 4;
+    var yc = y + 10.5; /* 菱形中心对齐所在行的条形中心，避免所有截止点堆在第一行 */
+    return '<polygon points="' + mx + ',' + (yc - hf) + ' ' + (mx + hf) + ',' + yc + ' ' + mx + ',' + (yc + hf) + ' ' + (mx - hf) + ',' + yc + '" fill="' + col + '" stroke="#fff" stroke-width="1.5"><title>' + esc(lbl + "：" + fmtDateFull(dateStr) + (past ? "（已截止）" : "")) + '</title></polygon>';
+  }
+  var rows = "";
+  for(var i = 0; i < list.length; i++){
+    var cf = list[i];
+    var y = top + i * rowH;
+    var x1 = Math.max(xFn(cf.startDate), padL);
+    var x2 = xFn(cf.endDate);
+    var bw = Math.max(8, x2 - x1);
+    var ended = daysDiff(today, cf.endDate) < 0;
+    var barFill = ended ? "#C7CDD6" : cat.color;
+    var dateTxt = cf.startDate.slice(5).replace('-','/') + "-" + cf.endDate.slice(5).replace('-','/');
+    var locShort = (cf.location || "").replace(/[·，,].*$/, "").slice(0, 14);
+    rows += '<g>';
+    rows += '<text x="' + (padL - 10) + '" y="' + (y + 13) + '" text-anchor="end" font-size="10.5" font-weight="700" fill="#0F172A">' + esc(cf.abbr.slice(0,18)) + '</text>';
+    rows += '<rect x="' + x1.toFixed(1) + '" y="' + (y + 4) + '" width="' + bw.toFixed(1) + '" height="13" rx="6" fill="' + barFill + '"><title>' + esc(cf.abbr + "：" + fmtDateFull(cf.startDate) + " - " + fmtDateFull(cf.endDate) + "，" + (cf.location || "")) + '</title></rect>';
+    var infoTxt = dateTxt + (locShort ? " · " + locShort : "");
+    var infoX = x1 + bw + 8;
+    var infoMaxX = W - padR - 4;
+    if(infoX > infoMaxX){
+      infoTxt = dateTxt;
+      infoX = Math.min(infoX, infoMaxX - locShort.length * 7);
+      if(infoX + infoTxt.length * 6.5 > W - padR) infoX = W - padR - infoTxt.length * 6.5;
+    }
+    rows += '<text x="' + infoX.toFixed(1) + '" y="' + (y + 13) + '" font-size="10.5" fill="#64748B" font-weight="500">' + esc(infoTxt) + '</text>';
+    rows += dm(cf.deadline, "#F59E0B", cf.abbr + " 常规投稿截止", y);
+    rows += dm(cf.lbaDeadline, "#10B981", cf.abbr + " LBA 截止", y);
+    rows += '</g>';
+  }
+  var svg = '<svg class="tl-chart" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg">' + grid + rows + '</svg>';
+  return '<div class="tl-group">' +
+    '<div class="tl-group-head" onclick="toggleTlGroup(this)">' +
+      '<span class="tl-group-color" style="background:' + cat.color + '"></span>' +
+      '<span class="tl-group-name">' + esc(cat.key) + '</span>' +
+      '<span class="tl-group-count">' + list.length + ' 场</span>' +
+      '<svg class="tl-group-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>' +
+    '</div>' +
+    '<div class="tl-group-body"><div class="tl-scroll">' + svg + '</div></div>' +
+  '</div>';
+}
+
+function toggleTlGroup(headEl){
+  headEl.parentElement.classList.toggle("collapsed");
+}
+function addDays(dateStr, n){
+  var t = Date.UTC(parseInt(dateStr.slice(0,4),10), parseInt(dateStr.slice(5,7),10)-1, parseInt(dateStr.slice(8,10),10));
+  t += n * 86400000;
+  var d = new Date(t);
+  return d.getUTCFullYear() + '-' + pad2(d.getUTCMonth()+1) + '-' + pad2(d.getUTCDate());
+}
+function nextMonth(ym){
+  var y = parseInt(ym.slice(0,4),10), m = parseInt(ym.slice(5,7),10);
+  m++;
+  if(m > 12){ m = 1; y++; }
+  return y + '-' + pad2(m) + '-01';
+}
+
+function renderHeaderMeta(){
+  var confs = data.conferences || [];
+  var cities = {};
+  for(var i = 0; i < confs.length; i++){
+    if(confs[i].location) cities[confs[i].location] = 1;
+  }
+  var n1 = document.getElementById('metaConf');
+  var n2 = document.getElementById('metaCat');
+  var n3 = document.getElementById('metaCity');
+  if(n1) n1.textContent = confs.length;
+  if(n2) n2.textContent = TL_CATEGORIES.length;
+  if(n3) n3.textContent = Object.keys(cities).length;
+}
+
+function refreshAll(){
+  renderHeaderMeta();
+  renderStats();
+  renderConfList();
+  renderTimeline();
+}
+
+function bindTabs(){
+  var tabs = document.querySelectorAll('#tabs .tab');
+  for(var i = 0; i < tabs.length; i++){
+    tabs[i].addEventListener('click', function(){
+      var actives = document.querySelectorAll('#tabs .tab.active');
+      for(var j = 0; j < actives.length; j++) actives[j].classList.remove('active');
+      this.classList.add('active');
+      var panels = document.querySelectorAll('.tab-panel');
+      for(var k = 0; k < panels.length; k++) panels[k].classList.remove('active');
+      document.getElementById(this.getAttribute('data-tab')).classList.add('active');
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  loadData();
+  bindTabs();
+  document.getElementById('confSearch').addEventListener('input', renderConfList);
+  document.getElementById('statusFilter').addEventListener('change', renderConfList);
+  var chips = document.querySelectorAll('#confChips .chip');
+  for(var i = 0; i < chips.length; i++){
+    chips[i].addEventListener('click', function(){
+      var filter = this.getAttribute('data-filter');
+      var allChip = null;
+      for(var j = 0; j < chips.length; j++){
+        if(chips[j].getAttribute('data-filter') === 'all'){ allChip = chips[j]; break; }
+      }
+      if(filter === 'all'){
+        confFilters.clear();
+        for(var k = 0; k < chips.length; k++) chips[k].classList.remove('active');
+        this.classList.add('active');
+      }else{
+        /* 多选：点击叠加，再点取消；一个都没选时回到「全部」 */
+        this.classList.toggle('active');
+        confFilters.clear();
+        for(var m = 0; m < chips.length; m++){
+          if(chips[m] !== allChip && chips[m].classList.contains('active')){
+            confFilters.add(chips[m].getAttribute('data-filter'));
+          }
+        }
+        if(confFilters.size === 0){
+          allChip.classList.add('active');
+        }else{
+          allChip.classList.remove('active');
+        }
+      }
+      renderConfList();
+    });
+  }
+  refreshAll();
+});
+</script>
+</body>
+</html>
